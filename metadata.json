@@ -1,0 +1,6 @@
+{
+  "name": "gather",
+  "description": "Browser conversation, live commerce, and gamer broadcast studio with multi-guest WebSocket rooms, audio mixer, scene transitions, Gemini AI Producer, and multi-mode Watch Page.",
+  "requestFramePermissions": ["camera", "microphone", "display-capture"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

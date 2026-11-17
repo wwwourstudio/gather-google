@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="gather-bg" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="55%" stop-color="#2f6bf0" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+    <linearGradient id="gather-ring" x1="18" y1="18" x2="46" y2="46" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#dbeafe" />
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#gather-bg)" />
+  <rect x="4.75" y="4.75" width="54.5" height="54.5" rx="15.25" stroke="rgba(255,255,255,0.28)" stroke-width="1.5" />
+  <path
+    d="M42.5 24.5C40.2 20.6 36 18.2 31.2 18.2C23.9 18.2 18 24.2 18 32C18 39.8 23.9 45.8 31.4 45.8C38.4 45.8 43.8 41 44.5 34.4H31.8"
+    stroke="url(#gather-ring)"
+    stroke-width="5.2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <circle cx="45.5" cy="20.5" r="3.8" fill="#34d399" />
+</svg>

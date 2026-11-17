@@ -1,0 +1,370 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string
+        && id.size() >= 1
+        && id.size() <= 128
+        && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isBoundedSlug(val, minLen, maxLen) {
+      return val is string
+        && val.size() >= minLen
+        && val.size() <= maxLen
+        && val.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isOptionalBoundedString(data, key, maxLen) {
+      return !(key in data) || (data[key] is string && data[key].size() <= maxLen);
+    }
+
+    function isValidCustomScene(data, sceneId) {
+      return data.keys().hasAll([
+          'id',
+          'ownerUid',
+          'name',
+          'aspect',
+          'baseTemplateId',
+          'elements',
+          'backdrop',
+          'bannerTitle',
+          'bannerSubtitle',
+          'bannerStyle',
+          'bannerVisible',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id',
+          'ownerUid',
+          'name',
+          'aspect',
+          'baseTemplateId',
+          'elements',
+          'backdrop',
+          'bannerTitle',
+          'bannerSubtitle',
+          'bannerStyle',
+          'bannerVisible',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.id == sceneId
+        && isValidId(data.id)
+        && isValidId(data.ownerUid)
+        && data.ownerUid == request.auth.uid
+        && data.name is string
+        && data.name.size() >= 1
+        && data.name.size() <= 36
+        && data.aspect is string
+        && data.aspect.size() <= 8
+        && data.aspect in ['16:9', '9:16']
+        && data.baseTemplateId is string
+        && data.baseTemplateId.size() >= 1
+        && data.baseTemplateId.size() <= 64
+        && data.elements is list
+        && data.elements.size() >= 1
+        && data.elements.size() <= 12
+        && data.elements[0] is map
+        && data.backdrop is string
+        && data.backdrop.size() <= 16
+        && data.backdrop in ['dusk', 'graphite', 'ember', 'forest', 'paper']
+        && data.bannerTitle is string
+        && data.bannerTitle.size() <= 80
+        && data.bannerSubtitle is string
+        && data.bannerSubtitle.size() <= 120
+        && data.bannerStyle is string
+        && data.bannerStyle.size() <= 16
+        && data.bannerStyle in ['editorial', 'broadcast', 'glass', 'minimal', 'block']
+        && data.bannerVisible is bool
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidUserProfile(data, userId) {
+      return data.keys().hasAll(['uid', 'displayName', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly([
+          'uid',
+          'displayName',
+          'email',
+          'photoURL',
+          'paypalHandle',
+          'venmoHandle',
+          'cashappTag',
+          'stripeUrl',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.uid == userId
+        && data.uid == request.auth.uid
+        && isValidId(data.uid)
+        && data.displayName is string
+        && data.displayName.size() >= 1
+        && data.displayName.size() <= 40
+        && isOptionalBoundedString(data, 'email', 120)
+        && isOptionalBoundedString(data, 'photoURL', 500)
+        && isOptionalBoundedString(data, 'paypalHandle', 60)
+        && isOptionalBoundedString(data, 'venmoHandle', 60)
+        && isOptionalBoundedString(data, 'cashappTag', 40)
+        && isOptionalBoundedString(data, 'stripeUrl', 240)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidStreamSubscription(data, subscriptionId) {
+      return data.keys().hasAll([
+          'subscriptionId',
+          'hostKey',
+          'hostName',
+          'subscriberUid',
+          'subscriberEmail',
+          'subscriberName',
+          'active',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'subscriptionId',
+          'hostKey',
+          'hostUid',
+          'hostName',
+          'subscriberUid',
+          'subscriberEmail',
+          'subscriberName',
+          'active',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.subscriptionId == subscriptionId
+        && isBoundedSlug(data.hostKey, 1, 64)
+        && isValidId(data.subscriberUid)
+        && data.subscriberUid == request.auth.uid
+        && data.subscriptionId == data.hostKey + '_' + data.subscriberUid
+        && isOptionalBoundedString(data, 'hostUid', 128)
+        && data.hostName is string
+        && data.hostName.size() >= 1
+        && data.hostName.size() <= 60
+        && data.subscriberEmail is string
+        && data.subscriberEmail.size() >= 3
+        && data.subscriberEmail.size() <= 120
+        && data.subscriberEmail == request.auth.token.email
+        && data.subscriberName is string
+        && data.subscriberName.size() >= 1
+        && data.subscriberName.size() <= 60
+        && data.active is bool
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidScheduledStream(data, showId) {
+      return data.keys().hasAll([
+          'id',
+          'hostUid',
+          'hostKey',
+          'hostName',
+          'title',
+          'scheduledIso',
+          'roomCode',
+          'watchMode',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id',
+          'hostUid',
+          'hostKey',
+          'hostName',
+          'title',
+          'description',
+          'scheduledIso',
+          'roomCode',
+          'watchMode',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.id == showId
+        && isValidId(data.id)
+        && isValidId(data.hostUid)
+        && data.hostUid == request.auth.uid
+        && isBoundedSlug(data.hostKey, 1, 64)
+        && data.hostName is string
+        && data.hostName.size() >= 1
+        && data.hostName.size() <= 60
+        && data.title is string
+        && data.title.size() >= 1
+        && data.title.size() <= 100
+        && isOptionalBoundedString(data, 'description', 500)
+        && data.scheduledIso is string
+        && data.scheduledIso.size() >= 10
+        && data.scheduledIso.size() <= 40
+        && isBoundedSlug(data.roomCode, 2, 24)
+        && data.watchMode is string
+        && data.watchMode.size() <= 16
+        && data.watchMode in ['standard', 'shop', 'gamer']
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if false;
+      allow create: if isOwner(userId)
+        && isValidId(userId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isSignedIn()
+        && isValidId(userId)
+        && isValidUserProfile(incoming(), userId)
+        && isOwner(userId)
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'displayName',
+          'email',
+          'photoURL',
+          'paypalHandle',
+          'venmoHandle',
+          'cashappTag',
+          'stripeUrl',
+          'updatedAt'
+        ]);
+      allow delete: if isOwner(userId) && isValidId(userId);
+    }
+
+    match /subscriptions/{subscriptionId} {
+      allow get: if isSignedIn()
+        && isValidId(subscriptionId)
+        && (
+          (resource == null
+            && subscriptionId.size() > request.auth.uid.size() + 1
+            && subscriptionId[subscriptionId.size() - request.auth.uid.size() - 1 : subscriptionId.size()] == '_' + request.auth.uid)
+          || (resource != null
+            && (existing().subscriberUid == request.auth.uid
+              || (('hostUid' in existing()) && existing().hostUid == request.auth.uid)))
+        );
+      allow list: if isSignedIn()
+        && (
+          existing().subscriberUid == request.auth.uid
+          || (('hostUid' in existing()) && existing().hostUid == request.auth.uid)
+        );
+      allow create: if isSignedIn()
+        && isValidId(subscriptionId)
+        && isValidStreamSubscription(incoming(), subscriptionId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isSignedIn()
+        && isValidId(subscriptionId)
+        && isValidStreamSubscription(incoming(), subscriptionId)
+        && existing().subscriberUid == request.auth.uid
+        && incoming().subscriptionId == existing().subscriptionId
+        && incoming().hostKey == existing().hostKey
+        && incoming().subscriberUid == existing().subscriberUid
+        && incoming().subscriberEmail == existing().subscriberEmail
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'active',
+          'hostName',
+          'hostUid',
+          'subscriberName',
+          'updatedAt'
+        ]);
+      allow delete: if isSignedIn()
+        && isValidId(subscriptionId)
+        && existing().subscriberUid == request.auth.uid;
+    }
+
+    match /scheduledShows/{showId} {
+      allow get: if isSignedIn()
+        && isValidId(showId)
+        && (resource == null || existing().hostUid == request.auth.uid);
+      allow list: if isSignedIn()
+        && existing().hostUid == request.auth.uid;
+      allow create: if isSignedIn()
+        && isValidId(showId)
+        && isValidScheduledStream(incoming(), showId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isSignedIn()
+        && isValidId(showId)
+        && isValidScheduledStream(incoming(), showId)
+        && existing().hostUid == request.auth.uid
+        && incoming().id == existing().id
+        && incoming().hostUid == existing().hostUid
+        && incoming().hostKey == existing().hostKey
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'hostName',
+          'title',
+          'description',
+          'scheduledIso',
+          'roomCode',
+          'watchMode',
+          'updatedAt'
+        ]);
+      allow delete: if isSignedIn()
+        && isValidId(showId)
+        && existing().hostUid == request.auth.uid;
+    }
+
+    match /customScenes/{sceneId} {
+      allow get: if isSignedIn()
+        && isValidId(sceneId)
+        && (resource == null || existing().ownerUid == request.auth.uid);
+      allow list: if isSignedIn()
+        && existing().ownerUid == request.auth.uid;
+      allow create: if isSignedIn()
+        && isValidId(sceneId)
+        && isValidCustomScene(incoming(), sceneId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isSignedIn()
+        && isValidId(sceneId)
+        && isValidCustomScene(incoming(), sceneId)
+        && existing().ownerUid == request.auth.uid
+        && incoming().id == existing().id
+        && incoming().ownerUid == existing().ownerUid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'name',
+          'aspect',
+          'baseTemplateId',
+          'elements',
+          'backdrop',
+          'bannerTitle',
+          'bannerSubtitle',
+          'bannerStyle',
+          'bannerVisible',
+          'updatedAt'
+        ]);
+      allow delete: if isSignedIn()
+        && isValidId(sceneId)
+        && existing().ownerUid == request.auth.uid;
+    }
+  }
+}

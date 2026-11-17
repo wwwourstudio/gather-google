@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>gather — The live conversation, commerce & gamer studio</title>
+    <meta
+      name="description"
+      content="A browser broadcast studio for up to six people: smooth scene transitions, audio mixer, screen & slide presenting, Gemini AI producer, live Shopify & Etsy shopping, and gamer watch pages."
+    />
+    <meta property="og:title" content="gather — The live conversation, commerce & gamer studio" />
+    <meta
+      property="og:description"
+      content="Run multi-guest shows, shoppable live drops, and interactive gamer broadcasts right from your browser."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#080c16" />
+    <link rel="icon" type="image/png" href="/icon.png" />
+    <link rel="apple-touch-icon" href="/icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display&family=Onest:wght@600;700&family=Playfair+Display:wght@700;800&display=swap"
+    />
+    <script>
+      (function () {
+        var t = 'dark';
+        try {
+          var saved = localStorage.getItem('gather:theme');
+          if (saved) t = JSON.parse(saved);
+        } catch (e) {}
+        var root = document.documentElement;
+        if (t === 'light') {
+          root.classList.remove('dark');
+          root.setAttribute('data-theme', 'light');
+        } else {
+          root.classList.add('dark');
+          root.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
